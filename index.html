@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HACKATHON @ BEN'S</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Space+Grotesk:wght@700&display=swap" rel="stylesheet">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      background: #FFF8E7;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-family: 'JetBrains Mono', monospace;
+      padding: 24px;
+      gap: 32px;
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3rem;
+      text-transform: uppercase;
+      letter-spacing: 4px;
+      color: #000;
+      text-align: center;
+    }
+
+    .terminal {
+      width: 100%;
+      max-width: 720px;
+      background: #1a1a2e;
+      border: 3px solid #000;
+      box-shadow: 8px 8px 0px #000;
+    }
+
+    .terminal-bar {
+      background: #000;
+      padding: 10px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .terminal-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 0;
+      border: 2px solid #000;
+    }
+    .terminal-dot.red { background: #FF6B6B; }
+    .terminal-dot.yellow { background: #FFE66D; }
+    .terminal-dot.green { background: #4ECDC4; }
+
+    .terminal-title {
+      color: #888;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .terminal-body {
+      padding: 24px;
+      min-height: 320px;
+      color: #4ECDC4;
+      font-size: 1rem;
+      line-height: 1.8;
+    }
+
+    .terminal-body .prompt { color: #FFE66D; }
+    .terminal-body .comment { color: #666; }
+    .terminal-body .highlight { color: #FF6B6B; font-weight: 700; }
+    .terminal-body .accent { color: #95E1D3; }
+    .terminal-body .white { color: #fff; }
+
+    .cursor {
+      display: inline-block;
+      width: 10px;
+      height: 1.2em;
+      background: #4ECDC4;
+      vertical-align: text-bottom;
+      animation: blink 0.7s step-end infinite;
+    }
+
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+
+    .line { display: none; }
+    .line.visible { display: block; }
+
+    .push-btn {
+      background: #FF6B6B;
+      color: #000;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0px #000;
+      padding: 20px 48px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+
+    .push-btn:hover:not(:disabled) {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+
+    .push-btn:active:not(:disabled) {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+    }
+
+    .push-btn:disabled {
+      background: #ccc;
+      color: #888;
+      cursor: not-allowed;
+      opacity: 0.7;
+    }
+
+    /* Modal overlay */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.6);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.open { display: flex; }
+
+    .modal {
+      background: #FFF8E7;
+      border: 3px solid #000;
+      box-shadow: 8px 8px 0px #000;
+      padding: 32px;
+      width: 90%;
+      max-width: 440px;
+      text-align: center;
+    }
+
+    .modal h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 8px;
+    }
+
+    .modal p {
+      font-size: 0.85rem;
+      color: #555;
+      margin-bottom: 20px;
+    }
+
+    .modal input {
+      width: 100%;
+      background: #fff;
+      border: 3px solid #000;
+      padding: 12px 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 1rem;
+      outline: none;
+      margin-bottom: 20px;
+    }
+    .modal input:focus {
+      box-shadow: 4px 4px 0px #000;
+    }
+    .modal input::placeholder {
+      color: #aaa;
+    }
+
+    .modal-btn {
+      background: #FFE66D;
+      color: #000;
+      border: 3px solid #000;
+      box-shadow: 4px 4px 0px #000;
+      padding: 12px 32px;
+      font-family: 'Space Grotesk', sans-serif;
+      font-weight: 700;
+      font-size: 1rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      cursor: pointer;
+      transition: transform 0.1s, box-shadow 0.1s;
+    }
+    .modal-btn:hover {
+      transform: translate(2px, 2px);
+      box-shadow: 2px 2px 0px #000;
+    }
+    .modal-btn:active {
+      transform: translate(4px, 4px);
+      box-shadow: none;
+    }
+    .modal-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      color: #888;
+    }
+
+    /* Confetti / success state */
+    .success-msg {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: #000;
+      display: none;
+      text-align: center;
+    }
+    .success-msg.visible { display: block; }
+    .success-msg .name { color: #FF6B6B; }
+
+    @media (max-width: 600px) {
+      h1 { font-size: 1.8rem; }
+      .terminal-body { font-size: 0.85rem; padding: 16px; min-height: 260px; }
+      .push-btn { font-size: 1.1rem; padding: 16px 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <h1>Hackathon @ Ben's</h1>
+
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="terminal-dot red"></div>
+      <div class="terminal-dot yellow"></div>
+      <div class="terminal-dot green"></div>
+      <span class="terminal-title">bash</span>
+    </div>
+    <div class="terminal-body" id="terminal">
+      <div class="line" id="line0"><span class="prompt">$</span> <span class="comment">./invite.sh</span></div>
+      <div class="line" id="line1">&nbsp;</div>
+      <div class="line" id="line2"><span class="white">WHAT:</span> <span class="highlight">HACKATHON</span></div>
+      <div class="line" id="line3"><span class="white">WHERE:</span> <span class="accent">Ben's house</span></div>
+      <div class="line" id="line4"><span class="white">WHEN:</span> <span class="highlight">Friday</span></div>
+      <div class="line" id="line5"><span class="white">ENDS:</span> <span class="highlight">never. it goes forever.</span></div>
+      <div class="line" id="line6">&nbsp;</div>
+      <div class="line" id="line7"><span class="comment"># bring your laptop.</span></div>
+      <div class="line" id="line8"><span class="comment"># bring your ideas.</span></div>
+      <div class="line" id="line9"><span class="comment"># we ship at all costs.</span></div>
+      <div class="line" id="line10">&nbsp;</div>
+      <div class="line" id="line11"><span class="prompt">$</span> <span class="accent">git add yourself</span></div>
+      <div class="line" id="line12"><span class="prompt">$</span> <span class="white">push the button below to confirm ↓</span><span class="cursor" id="cursor"></span></div>
+    </div>
+  </div>
+
+  <button class="push-btn" id="pushBtn" disabled>Push to Main</button>
+
+  <div class="success-msg" id="successMsg">
+    <span class="name" id="confirmedName"></span> has been merged.<br>see you friday.
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="modalOverlay">
+    <div class="modal">
+      <h2>git config user.name</h2>
+      <p>enter your name to push</p>
+      <input type="text" id="nameInput" placeholder="your name" maxlength="40" autofocus>
+      <br>
+      <button class="modal-btn" id="confirmBtn" disabled>Confirm</button>
+    </div>
+  </div>
+
+  <script>
+    const lines = document.querySelectorAll('.line');
+    const pushBtn = document.getElementById('pushBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const nameInput = document.getElementById('nameInput');
+    const confirmBtn = document.getElementById('confirmBtn');
+    const successMsg = document.getElementById('successMsg');
+    const confirmedName = document.getElementById('confirmedName');
+    const cursor = document.getElementById('cursor');
+
+    // Type out terminal lines one by one
+    let currentLine = 0;
+    function showNextLine() {
+      if (currentLine < lines.length) {
+        lines[currentLine].classList.add('visible');
+        currentLine++;
+        const delay = currentLine <= 1 ? 600 : currentLine <= 6 ? 300 : 250;
+        setTimeout(showNextLine, delay);
+      } else {
+        // All lines shown — enable button
+        pushBtn.disabled = false;
+      }
+    }
+    setTimeout(showNextLine, 500);
+
+    // Button opens modal
+    pushBtn.addEventListener('click', () => {
+      modalOverlay.classList.add('open');
+      setTimeout(() => nameInput.focus(), 100);
+    });
+
+    // Close modal on overlay click
+    modalOverlay.addEventListener('click', (e) => {
+      if (e.target === modalOverlay) {
+        modalOverlay.classList.remove('open');
+      }
+    });
+
+    // Enable confirm when name is entered
+    nameInput.addEventListener('input', () => {
+      confirmBtn.disabled = nameInput.value.trim() === '';
+    });
+
+    // Submit on enter
+    nameInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' && nameInput.value.trim()) {
+        confirmBtn.click();
+      }
+    });
+
+    // Confirm
+    confirmBtn.addEventListener('click', () => {
+      const name = nameInput.value.trim();
+      if (!name) return;
+
+      modalOverlay.classList.remove('open');
+      pushBtn.style.display = 'none';
+      confirmedName.textContent = name;
+      successMsg.classList.add('visible');
+
+      // Replace last terminal line
+      const lastLine = document.getElementById('line12');
+      cursor.remove();
+      lastLine.innerHTML = `<span class="prompt">$</span> <span class="accent">git push origin main</span>`;
+
+      // Add merge line
+      const mergeLine = document.createElement('div');
+      mergeLine.className = 'line visible';
+      mergeLine.innerHTML = `<span class="highlight">✓ ${name} merged successfully</span><span class="cursor"></span>`;
+      document.getElementById('terminal').appendChild(mergeLine);
+    });
+  </script>
+</body>
+</html>
