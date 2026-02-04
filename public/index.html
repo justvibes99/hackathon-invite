@@ -208,7 +208,7 @@
       color: #888;
     }
 
-    /* Confetti / success state */
+    /* Success state */
     .success-msg {
       font-family: 'Space Grotesk', sans-serif;
       font-size: 1.5rem;
@@ -221,6 +221,53 @@
     }
     .success-msg.visible { display: block; }
     .success-msg .name { color: #FF6B6B; }
+
+    /* Git log — committed hackers */
+    .git-log {
+      width: 100%;
+      max-width: 720px;
+      border: 3px solid #000;
+      box-shadow: 8px 8px 0px #000;
+      background: #fff;
+      padding: 24px;
+    }
+
+    .git-log h2 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 1.25rem;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      margin-bottom: 16px;
+    }
+
+    .git-log .count {
+      color: #FF6B6B;
+    }
+
+    .git-log ul {
+      list-style: none;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .git-log li {
+      background: #4ECDC4;
+      border: 3px solid #000;
+      box-shadow: 3px 3px 0px #000;
+      padding: 6px 14px;
+      font-weight: 700;
+      font-size: 0.9rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .git-log .empty {
+      color: #888;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
     @media (max-width: 600px) {
       h1 { font-size: 1.8rem; }
@@ -263,6 +310,13 @@
     <span class="name" id="confirmedName"></span> has been merged.<br>see you friday.
   </div>
 
+  <div class="git-log" id="gitLog">
+    <h2>git log <span class="count" id="hackerCount">(0)</span></h2>
+    <ul id="hackerList">
+      <li class="empty">no commits yet. be the first.</li>
+    </ul>
+  </div>
+
   <!-- Modal -->
   <div class="modal-overlay" id="modalOverlay">
     <div class="modal">
@@ -283,6 +337,38 @@
     const successMsg = document.getElementById('successMsg');
     const confirmedName = document.getElementById('confirmedName');
     const cursor = document.getElementById('cursor');
+    const hackerList = document.getElementById('hackerList');
+    const hackerCount = document.getElementById('hackerCount');
+
+    // Load existing hackers
+    async function loadHackers() {
+      try {
+        const res = await fetch('/api/hackers');
+        const hackers = await res.json();
+        renderHackers(hackers);
+      } catch (e) {
+        // API not available yet — that's fine
+      }
+    }
+
+    function renderHackers(hackers) {
+      hackerCount.textContent = `(${hackers.length})`;
+      if (hackers.length === 0) {
+        hackerList.innerHTML = '<li class="empty">no commits yet. be the first.</li>';
+        return;
+      }
+      hackerList.innerHTML = hackers
+        .map(h => `<li>${escapeHtml(h.name)}</li>`)
+        .join('');
+    }
+
+    function escapeHtml(str) {
+      const d = document.createElement('div');
+      d.textContent = str;
+      return d.innerHTML;
+    }
+
+    loadHackers();
 
     // Type out terminal lines one by one
     let currentLine = 0;
@@ -293,7 +379,6 @@
         const delay = currentLine <= 1 ? 600 : currentLine <= 6 ? 300 : 250;
         setTimeout(showNextLine, delay);
       } else {
-        // All lines shown — enable button
         pushBtn.disabled = false;
       }
     }
@@ -324,10 +409,23 @@
       }
     });
 
-    // Confirm
-    confirmBtn.addEventListener('click', () => {
+    // Confirm — persist to DB
+    confirmBtn.addEventListener('click', async () => {
       const name = nameInput.value.trim();
       if (!name) return;
+
+      confirmBtn.disabled = true;
+      confirmBtn.textContent = 'Pushing...';
+
+      try {
+        await fetch('/api/hackers', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ name }),
+        });
+      } catch (e) {
+        // If API fails, still show the UI update
+      }
 
       modalOverlay.classList.remove('open');
       pushBtn.style.display = 'none';
@@ -342,8 +440,12 @@
       // Add merge line
       const mergeLine = document.createElement('div');
       mergeLine.className = 'line visible';
-      mergeLine.innerHTML = `<span class="highlight">✓ ${name} merged successfully</span><span class="cursor"></span>`;
+      mergeLine.innerHTML = `<span class="highlight">✓ ${escapeHtml(name)} merged successfully</span><span class="cursor"></span>`;
       document.getElementById('terminal').appendChild(mergeLine);
+
+      // Refresh the list
+      confirmBtn.textContent = 'Confirm';
+      loadHackers();
     });
   </script>
 </body>
