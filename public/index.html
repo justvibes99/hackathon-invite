@@ -9,9 +9,13 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    html, body {
+    html {
+      height: 100%;
+    }
+
+    body {
       background: #1e2030;
-      min-height: 100vh;
+      min-height: 100%;
       font-family: 'JetBrains Mono', monospace;
       color: #cdd6f4;
       font-size: 14px;
@@ -19,10 +23,11 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      padding: 24px;
     }
 
     .window {
-      width: 95%;
+      width: 100%;
       max-width: 1200px;
       height: 85vh;
       background: #282a36;
@@ -416,7 +421,7 @@
         thinking.classList.add('visible');
         const verb = verbs[Math.floor(Math.random() * verbs.length)];
         thinking.innerHTML = `<span class="mauve">· ${verb}<span class="dot-spinner"></span></span>`;
-        setTimeout(showNextLine, 1500);
+        setTimeout(showNextLine, 2500);
       } else if (currentLine === 1) {
         // Hide thinking, show content
         thinking.classList.remove('visible');
