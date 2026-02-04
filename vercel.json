@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/api/hackers", "destination": "/api/hackers" },
+    { "source": "/(.*)", "destination": "/public/$1" }
+  ]
+}
