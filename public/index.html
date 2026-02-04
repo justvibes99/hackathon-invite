@@ -9,126 +9,163 @@
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
-    body {
-      background: #1e2030;
+    html, body {
+      background: #282a36;
       min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
       font-family: 'JetBrains Mono', monospace;
-      padding: 24px;
-      gap: 24px;
-      color: #cad3f5;
+      color: #cdd6f4;
+      font-size: 14px;
+      line-height: 1.6;
     }
 
-    h1 {
-      font-size: 1.8rem;
-      font-weight: 700;
-      letter-spacing: 8px;
-      color: #cad3f5;
-      text-align: center;
-      text-transform: uppercase;
+    .window {
+      max-width: 800px;
+      margin: 0 auto;
+      min-height: 100vh;
     }
 
-    .terminal {
-      width: 100%;
-      max-width: 680px;
-      background: #24273a;
-      border-radius: 12px;
-      overflow: hidden;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
-    }
-
-    .terminal-bar {
-      background: #363a4f;
-      padding: 12px 16px;
+    .titlebar {
+      background: #3b3e52;
+      padding: 10px 16px;
       display: flex;
       align-items: center;
       gap: 8px;
+      position: sticky;
+      top: 0;
+      z-index: 10;
     }
 
-    .terminal-dot {
-      width: 12px;
-      height: 12px;
-      border-radius: 50%;
-    }
-    .terminal-dot.red { background: #ed8796; }
-    .terminal-dot.yellow { background: #eed49f; }
-    .terminal-dot.green { background: #a6da95; }
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot.r { background: #ed8796; }
+    .dot.y { background: #eed49f; }
+    .dot.g { background: #a6da95; }
 
-    .terminal-title {
+    .titlebar-text {
       color: #6e738d;
-      font-size: 0.75rem;
-      margin-left: auto;
-      margin-right: auto;
+      font-size: 13px;
+      margin: 0 auto;
     }
 
-    .terminal-body {
-      padding: 20px 24px;
-      min-height: 300px;
-      color: #cad3f5;
-      font-size: 0.9rem;
-      line-height: 1.9;
+    .body {
+      padding: 20px 24px 60px;
     }
 
-    .terminal-body .prompt { color: #c6a0f6; }
-    .terminal-body .comment { color: #6e738d; }
-    .terminal-body .highlight { color: #ed8796; font-weight: 700; }
-    .terminal-body .accent { color: #a6da95; }
-    .terminal-body .white { color: #cad3f5; }
+    .output { margin-bottom: 16px; }
+    .output:last-child { margin-bottom: 0; }
+
+    /* User prompt line */
+    .user-prompt {
+      background: #363a4f;
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      color: #cdd6f4;
+      font-weight: 700;
+    }
+    .user-prompt .chevron {
+      color: #eed49f;
+      margin-right: 6px;
+    }
+
+    /* Bullet output lines (like Claude responses) */
+    .bullet {
+      padding-left: 20px;
+      position: relative;
+      margin-bottom: 6px;
+    }
+    .bullet::before {
+      content: '●';
+      position: absolute;
+      left: 0;
+      color: #eed49f;
+      font-size: 10px;
+      top: 3px;
+    }
+
+    /* Tool call blocks */
+    .tool-block {
+      padding-left: 20px;
+      position: relative;
+      margin-bottom: 8px;
+    }
+    .tool-block::before {
+      content: '●';
+      position: absolute;
+      left: 0;
+      color: #eed49f;
+      font-size: 10px;
+      top: 3px;
+    }
+    .tool-name { color: #cdd6f4; font-weight: 700; }
+    .tool-output {
+      padding-left: 20px;
+      color: #939ab7;
+      border-left: 1px solid #494d64;
+      margin-top: 4px;
+      margin-left: 2px;
+    }
+    .tool-output .pipe { color: #494d64; }
+
+    .dim { color: #6e738d; }
+    .green { color: #a6da95; }
+    .red { color: #ed8796; }
+    .yellow { color: #eed49f; }
+    .blue { color: #8aadf4; }
+    .mauve { color: #c6a0f6; }
+    .bold { font-weight: 700; }
+    .text { color: #cdd6f4; }
 
     .cursor {
       display: inline-block;
       width: 8px;
-      height: 1.1em;
-      background: #cad3f5;
+      height: 14px;
+      background: #cdd6f4;
       vertical-align: text-bottom;
       animation: blink 1s step-end infinite;
     }
-
-    @keyframes blink {
-      50% { opacity: 0; }
-    }
+    @keyframes blink { 50% { opacity: 0; } }
 
     .line { display: none; }
     .line.visible { display: block; }
 
+    /* The RSVP button — styled to look like an inline prompt action */
+    .action-area {
+      margin-top: 16px;
+      display: none;
+    }
+    .action-area.visible { display: block; }
+
     .push-btn {
       background: #ed8796;
-      color: #24273a;
+      color: #282a36;
       border: none;
-      border-radius: 8px;
-      padding: 14px 36px;
+      border-radius: 4px;
+      padding: 8px 20px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.95rem;
+      font-size: 13px;
       font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 2px;
       cursor: pointer;
-      transition: all 0.15s ease;
-      box-shadow: 0 4px 12px rgba(237, 135, 150, 0.25);
+      transition: background 0.15s;
+      margin-left: 20px;
+    }
+    .push-btn:hover { background: #ee99a0; }
+    .push-btn:active { background: #eb7988; }
+
+    /* Committed hackers as git log output */
+    .hacker-log { margin-top: 16px; }
+    .hacker-entry {
+      padding-left: 20px;
+      color: #939ab7;
+    }
+    .hacker-entry .hash {
+      color: #eed49f;
+    }
+    .hacker-entry .name {
+      color: #a6da95;
     }
 
-    .push-btn:hover:not(:disabled) {
-      background: #ee99a0;
-      box-shadow: 0 4px 20px rgba(237, 135, 150, 0.4);
-      transform: translateY(-1px);
-    }
-
-    .push-btn:active:not(:disabled) {
-      transform: translateY(1px);
-      box-shadow: 0 2px 8px rgba(237, 135, 150, 0.2);
-    }
-
-    .push-btn:disabled {
-      background: #363a4f;
-      color: #6e738d;
-      cursor: not-allowed;
-      box-shadow: none;
-    }
-
-    /* Modal overlay */
+    /* Modal */
     .modal-overlay {
       position: fixed;
       inset: 0;
@@ -142,288 +179,303 @@
     .modal-overlay.open { display: flex; }
 
     .modal {
-      background: #24273a;
-      border: 1px solid #363a4f;
-      border-radius: 12px;
-      padding: 32px;
+      background: #363a4f;
+      border: 1px solid #494d64;
+      border-radius: 8px;
+      padding: 24px;
       width: 90%;
-      max-width: 420px;
-      text-align: center;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+      max-width: 400px;
     }
 
-    .modal h2 {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #c6a0f6;
-      margin-bottom: 8px;
-    }
-
-    .modal p {
-      font-size: 0.8rem;
+    .modal-label {
       color: #6e738d;
-      margin-bottom: 20px;
+      font-size: 12px;
+      margin-bottom: 8px;
     }
 
     .modal input {
       width: 100%;
-      background: #1e2030;
-      border: 1px solid #363a4f;
-      border-radius: 8px;
-      padding: 12px 16px;
+      background: #282a36;
+      border: 1px solid #494d64;
+      border-radius: 4px;
+      padding: 10px 12px;
       font-family: 'JetBrains Mono', monospace;
-      font-size: 0.95rem;
-      color: #cad3f5;
+      font-size: 14px;
+      color: #cdd6f4;
       outline: none;
-      margin-bottom: 20px;
-      transition: border-color 0.2s;
+      margin-bottom: 16px;
     }
-    .modal input:focus {
-      border-color: #c6a0f6;
-    }
-    .modal input::placeholder {
-      color: #494d64;
+    .modal input:focus { border-color: #c6a0f6; }
+    .modal input::placeholder { color: #494d64; }
+
+    .modal-actions {
+      display: flex;
+      gap: 8px;
+      justify-content: flex-end;
     }
 
     .modal-btn {
-      background: #a6da95;
-      color: #24273a;
+      background: #494d64;
+      color: #cdd6f4;
       border: none;
-      border-radius: 8px;
-      padding: 10px 28px;
+      border-radius: 4px;
+      padding: 8px 16px;
       font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
       font-weight: 700;
-      font-size: 0.85rem;
-      text-transform: uppercase;
-      letter-spacing: 1px;
       cursor: pointer;
-      transition: all 0.15s ease;
+      transition: background 0.15s;
     }
-    .modal-btn:hover:not(:disabled) {
-      background: #b7e1a8;
+    .modal-btn:hover { background: #5b6078; }
+    .modal-btn.primary {
+      background: #a6da95;
+      color: #282a36;
     }
+    .modal-btn.primary:hover { background: #b7e1a8; }
     .modal-btn:disabled {
       background: #363a4f;
       color: #6e738d;
       cursor: not-allowed;
     }
 
-    /* Success state */
-    .success-msg {
-      font-size: 1rem;
-      font-weight: 700;
-      color: #cad3f5;
-      display: none;
-      text-align: center;
-      line-height: 1.6;
-    }
-    .success-msg.visible { display: block; }
-    .success-msg .name { color: #a6da95; }
-
-    /* Git log — committed hackers */
-    .git-log {
-      width: 100%;
-      max-width: 680px;
-      border-radius: 12px;
-      background: #24273a;
-      padding: 20px 24px;
-      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
-    }
-
-    .git-log h2 {
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #6e738d;
-      margin-bottom: 14px;
-    }
-
-    .git-log .count {
-      color: #8aadf4;
-    }
-
-    .git-log ul {
-      list-style: none;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-    }
-
-    .git-log li {
-      background: #363a4f;
-      border-radius: 6px;
-      padding: 5px 12px;
-      font-size: 0.8rem;
-      color: #a6da95;
-    }
-
-    .git-log li.empty {
-      background: none;
-      padding: 0;
-      color: #6e738d;
-      font-size: 0.8rem;
-      font-style: italic;
-    }
-
     @media (max-width: 600px) {
-      h1 { font-size: 1.3rem; letter-spacing: 5px; }
-      .terminal-body { font-size: 0.8rem; padding: 16px; min-height: 260px; }
-      .push-btn { font-size: 0.85rem; padding: 12px 28px; }
+      html { font-size: 12px; }
+      .body { padding: 16px; }
     }
   </style>
 </head>
 <body>
 
-  <h1>Hackathon</h1>
+<div class="window">
+  <div class="titlebar">
+    <div class="dot r"></div>
+    <div class="dot y"></div>
+    <div class="dot g"></div>
+    <span class="titlebar-text">hackathon — bash</span>
+  </div>
 
-  <div class="terminal">
-    <div class="terminal-bar">
-      <div class="terminal-dot red"></div>
-      <div class="terminal-dot yellow"></div>
-      <div class="terminal-dot green"></div>
-      <span class="terminal-title">bash</span>
+  <div class="body" id="terminal">
+
+    <!-- User prompt -->
+    <div class="line" id="line0">
+      <div class="user-prompt"><span class="chevron">❯</span>./invite.sh</div>
     </div>
-    <div class="terminal-body" id="terminal">
-      <div class="line" id="line0"><span class="prompt">$</span> <span class="comment">./invite.sh</span></div>
-      <div class="line" id="line1">&nbsp;</div>
-      <div class="line" id="line2"><span class="white">WHAT:</span> <span class="highlight">HACKATHON</span></div>
-      <div class="line" id="line3"><span class="white">WHERE:</span> <span class="accent">Ben's house</span></div>
-      <div class="line" id="line4"><span class="white">WHEN:</span> <span class="highlight">Friday</span></div>
-      <div class="line" id="line5"><span class="white">ENDS:</span> <span class="highlight">never. it goes forever.</span></div>
-      <div class="line" id="line6">&nbsp;</div>
-      <div class="line" id="line7"><span class="comment"># bring your laptop.</span></div>
-      <div class="line" id="line8"><span class="comment"># bring your ideas.</span></div>
-      <div class="line" id="line9"><span class="comment"># we ship at all costs.</span></div>
-      <div class="line" id="line10">&nbsp;</div>
-      <div class="line" id="line11"><span class="prompt">$</span> <span class="accent">git add yourself</span></div>
-      <div class="line" id="line12"><span class="prompt">$</span> <span class="white">push the button below to confirm ↓</span><span class="cursor" id="cursor"></span></div>
+
+    <div class="line" id="line1">
+      <div class="output">
+        <div class="tool-block">
+          <span class="tool-name">Read(invite.sh)</span>
+          <div class="tool-output">
+            Loading hackathon details...
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="line" id="line2">
+      <div class="bullet"><span class="text">WHAT:  </span><span class="red bold">HACKATHON</span></div>
+    </div>
+    <div class="line" id="line3">
+      <div class="bullet"><span class="text">WHERE: </span><span class="green">Ben's house</span></div>
+    </div>
+    <div class="line" id="line4">
+      <div class="bullet"><span class="text">WHEN:  </span><span class="yellow">Friday</span></div>
+    </div>
+    <div class="line" id="line5">
+      <div class="bullet"><span class="text">ENDS:  </span><span class="red bold">never. it goes forever.</span></div>
+    </div>
+
+    <div class="line" id="line6">&nbsp;</div>
+
+    <div class="line" id="line7">
+      <div class="bullet dim">bring your laptop.</div>
+    </div>
+    <div class="line" id="line8">
+      <div class="bullet dim">bring your ideas.</div>
+    </div>
+    <div class="line" id="line9">
+      <div class="bullet dim">we ship at all costs.</div>
+    </div>
+
+    <div class="line" id="line10">&nbsp;</div>
+
+    <div class="line" id="line11">
+      <div class="user-prompt"><span class="chevron">❯</span>git add yourself</div>
+    </div>
+
+    <div class="line" id="line12">
+      <div class="bullet"><span class="text">Push the button to confirm your commit.</span><span class="cursor" id="cursor"></span></div>
+    </div>
+
+    <!-- Button appears inline after animation -->
+    <div class="action-area" id="actionArea">
+      <button class="push-btn" id="pushBtn">PUSH TO MAIN</button>
+    </div>
+
+    <!-- Post-push output -->
+    <div class="line" id="pushOutput" style="display:none; margin-top: 16px;">
+      <div class="user-prompt"><span class="chevron">❯</span>git push origin main</div>
+    </div>
+    <div class="line" id="mergeOutput" style="display:none;">
+      <div class="output">
+        <div class="tool-block">
+          <span class="tool-name">Bash(git push origin main)</span>
+          <div class="tool-output" id="mergeDetails"></div>
+        </div>
+      </div>
+    </div>
+    <div class="line" id="successOutput" style="display:none;">
+      <div class="bullet"><span class="green bold" id="successText"></span></div>
+    </div>
+
+    <!-- Git log section -->
+    <div class="hacker-log" id="hackerLog" style="margin-top: 24px;">
+      <div class="tool-block">
+        <span class="tool-name">git log --oneline <span class="dim" id="hackerCount">(0 commits)</span></span>
+        <div class="tool-output" id="hackerList">
+          <span class="dim">no commits yet</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-label">git config user.name</div>
+    <input type="text" id="nameInput" placeholder="enter your name" maxlength="40" autofocus>
+    <div class="modal-actions">
+      <button class="modal-btn" id="cancelBtn">Cancel</button>
+      <button class="modal-btn primary" id="confirmBtn" disabled>Confirm</button>
     </div>
   </div>
+</div>
 
-  <button class="push-btn" id="pushBtn" disabled>Push to Main</button>
+<script>
+  const lines = document.querySelectorAll('.line');
+  const actionArea = document.getElementById('actionArea');
+  const pushBtn = document.getElementById('pushBtn');
+  const modalOverlay = document.getElementById('modalOverlay');
+  const nameInput = document.getElementById('nameInput');
+  const confirmBtn = document.getElementById('confirmBtn');
+  const cancelBtn = document.getElementById('cancelBtn');
+  const hackerList = document.getElementById('hackerList');
+  const hackerCount = document.getElementById('hackerCount');
 
-  <div class="success-msg" id="successMsg">
-    <span class="name" id="confirmedName"></span> has been merged.<br>see you friday.
-  </div>
+  function randomHash() {
+    return Math.random().toString(16).slice(2, 9);
+  }
 
-  <div class="git-log" id="gitLog">
-    <h2>git log <span class="count" id="hackerCount">(0)</span></h2>
-    <ul id="hackerList">
-      <li class="empty">no commits yet. be the first.</li>
-    </ul>
-  </div>
+  async function loadHackers() {
+    try {
+      const res = await fetch('/api/hackers');
+      const hackers = await res.json();
+      renderHackers(hackers);
+    } catch (e) {}
+  }
 
-  <!-- Modal -->
-  <div class="modal-overlay" id="modalOverlay">
-    <div class="modal">
-      <h2>git config user.name</h2>
-      <p>enter your name to push</p>
-      <input type="text" id="nameInput" placeholder="your name" maxlength="40" autofocus>
-      <br>
-      <button class="modal-btn" id="confirmBtn" disabled>Confirm</button>
-    </div>
-  </div>
+  function renderHackers(hackers) {
+    hackerCount.textContent = `(${hackers.length} commit${hackers.length !== 1 ? 's' : ''})`;
+    if (hackers.length === 0) {
+      hackerList.innerHTML = '<span class="dim">no commits yet</span>';
+      return;
+    }
+    hackerList.innerHTML = hackers
+      .map(h => `<div class="hacker-entry"><span class="hash">${randomHash()}</span> add <span class="name">${escapeHtml(h.name)}</span></div>`)
+      .join('');
+  }
 
-  <script>
-    const lines = document.querySelectorAll('.line');
-    const pushBtn = document.getElementById('pushBtn');
-    const modalOverlay = document.getElementById('modalOverlay');
-    const nameInput = document.getElementById('nameInput');
-    const confirmBtn = document.getElementById('confirmBtn');
-    const successMsg = document.getElementById('successMsg');
-    const confirmedName = document.getElementById('confirmedName');
+  function escapeHtml(str) {
+    const d = document.createElement('div');
+    d.textContent = str;
+    return d.innerHTML;
+  }
+
+  loadHackers();
+
+  // Type out lines
+  let currentLine = 0;
+  function showNextLine() {
+    if (currentLine < lines.length) {
+      lines[currentLine].classList.add('visible');
+      currentLine++;
+      const delay = currentLine <= 1 ? 800 : currentLine === 2 ? 600 : 200;
+      setTimeout(showNextLine, delay);
+    } else {
+      actionArea.classList.add('visible');
+    }
+  }
+  setTimeout(showNextLine, 400);
+
+  pushBtn.addEventListener('click', () => {
+    modalOverlay.classList.add('open');
+    setTimeout(() => nameInput.focus(), 100);
+  });
+
+  cancelBtn.addEventListener('click', () => {
+    modalOverlay.classList.remove('open');
+  });
+
+  modalOverlay.addEventListener('click', (e) => {
+    if (e.target === modalOverlay) modalOverlay.classList.remove('open');
+  });
+
+  nameInput.addEventListener('input', () => {
+    confirmBtn.disabled = nameInput.value.trim() === '';
+  });
+
+  nameInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && nameInput.value.trim()) confirmBtn.click();
+  });
+
+  confirmBtn.addEventListener('click', async () => {
+    const name = nameInput.value.trim();
+    if (!name) return;
+
+    confirmBtn.disabled = true;
+    confirmBtn.textContent = 'Pushing...';
+
+    try {
+      await fetch('/api/hackers', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      });
+    } catch (e) {}
+
+    modalOverlay.classList.remove('open');
+    actionArea.style.display = 'none';
+
+    // Remove cursor
     const cursor = document.getElementById('cursor');
-    const hackerList = document.getElementById('hackerList');
-    const hackerCount = document.getElementById('hackerCount');
+    if (cursor) cursor.remove();
 
-    async function loadHackers() {
-      try {
-        const res = await fetch('/api/hackers');
-        const hackers = await res.json();
-        renderHackers(hackers);
-      } catch (e) {}
-    }
+    // Show push output
+    const pushOutput = document.getElementById('pushOutput');
+    pushOutput.style.display = 'block';
 
-    function renderHackers(hackers) {
-      hackerCount.textContent = `(${hackers.length})`;
-      if (hackers.length === 0) {
-        hackerList.innerHTML = '<li class="empty">no commits yet. be the first.</li>';
-        return;
-      }
-      hackerList.innerHTML = hackers
-        .map(h => `<li>${escapeHtml(h.name)}</li>`)
-        .join('');
-    }
+    setTimeout(() => {
+      const mergeOutput = document.getElementById('mergeOutput');
+      document.getElementById('mergeDetails').innerHTML =
+        `Enumerating objects: 3, done.\n` +
+        `Writing objects: 100% (3/3), done.\n` +
+        `   <span class="yellow">${randomHash()}..${randomHash()}</span>  main → main`;
+      mergeOutput.style.display = 'block';
 
-    function escapeHtml(str) {
-      const d = document.createElement('div');
-      d.textContent = str;
-      return d.innerHTML;
-    }
+      setTimeout(() => {
+        const successOutput = document.getElementById('successOutput');
+        document.getElementById('successText').textContent =
+          `✓ ${name} merged successfully. see you friday.`;
+        successOutput.style.display = 'block';
+        loadHackers();
+      }, 400);
+    }, 600);
 
-    loadHackers();
+    confirmBtn.textContent = 'Confirm';
+  });
+</script>
 
-    let currentLine = 0;
-    function showNextLine() {
-      if (currentLine < lines.length) {
-        lines[currentLine].classList.add('visible');
-        currentLine++;
-        const delay = currentLine <= 1 ? 600 : currentLine <= 6 ? 300 : 250;
-        setTimeout(showNextLine, delay);
-      } else {
-        pushBtn.disabled = false;
-      }
-    }
-    setTimeout(showNextLine, 500);
-
-    pushBtn.addEventListener('click', () => {
-      modalOverlay.classList.add('open');
-      setTimeout(() => nameInput.focus(), 100);
-    });
-
-    modalOverlay.addEventListener('click', (e) => {
-      if (e.target === modalOverlay) modalOverlay.classList.remove('open');
-    });
-
-    nameInput.addEventListener('input', () => {
-      confirmBtn.disabled = nameInput.value.trim() === '';
-    });
-
-    nameInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' && nameInput.value.trim()) confirmBtn.click();
-    });
-
-    confirmBtn.addEventListener('click', async () => {
-      const name = nameInput.value.trim();
-      if (!name) return;
-
-      confirmBtn.disabled = true;
-      confirmBtn.textContent = 'Pushing...';
-
-      try {
-        await fetch('/api/hackers', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name }),
-        });
-      } catch (e) {}
-
-      modalOverlay.classList.remove('open');
-      pushBtn.style.display = 'none';
-      confirmedName.textContent = name;
-      successMsg.classList.add('visible');
-
-      const lastLine = document.getElementById('line12');
-      cursor.remove();
-      lastLine.innerHTML = `<span class="prompt">$</span> <span class="accent">git push origin main</span>`;
-
-      const mergeLine = document.createElement('div');
-      mergeLine.className = 'line visible';
-      mergeLine.innerHTML = `<span class="highlight">✓ ${escapeHtml(name)} merged successfully</span><span class="cursor"></span>`;
-      document.getElementById('terminal').appendChild(mergeLine);
-
-      confirmBtn.textContent = 'Confirm';
-      loadHackers();
-    });
-  </script>
 </body>
 </html>
