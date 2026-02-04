@@ -23,14 +23,14 @@
 
     .window {
       width: 90%;
-      max-width: 750px;
+      max-width: 900px;
+      height: 540px;
       background: #282a36;
       border-radius: 12px;
       overflow: hidden;
       box-shadow: 0 12px 48px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
       display: flex;
       flex-direction: column;
-      max-height: 90vh;
     }
 
     .titlebar {
@@ -133,6 +133,34 @@
 
     .line { display: none; }
     .line.visible { display: block; }
+
+    /* Thinking spinner */
+    .thinking {
+      display: none;
+      padding-left: 20px;
+      color: #c6a0f6;
+      font-size: 13px;
+      margin-bottom: 6px;
+    }
+    .thinking.visible { display: flex; align-items: center; gap: 8px; }
+    .thinking .spinner {
+      display: inline-block;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin {
+      0% { content: '⠋'; }
+      100% { transform: rotate(360deg); }
+    }
+    .thinking .dot-spinner::after {
+      content: '';
+      animation: dots 1.5s steps(4) infinite;
+    }
+    @keyframes dots {
+      0% { content: ''; }
+      25% { content: '.'; }
+      50% { content: '..'; }
+      75% { content: '...'; }
+    }
 
     /* Inline terminal input */
     .prompt-input-area {
@@ -243,6 +271,10 @@
 
     <div class="line" id="line0">
       <div class="user-prompt"><span class="chevron">❯</span>cat hackathon.env</div>
+    </div>
+
+    <div class="thinking" id="thinking">
+      <span class="mauve">· Canoodling<span class="dot-spinner"></span></span>
     </div>
 
     <div class="line" id="line1">
@@ -368,14 +400,34 @@
 
   loadHackers();
 
-  // Type out lines
+  const thinking = document.getElementById('thinking');
+
+  const verbs = ['Canoodling', 'Brewing', 'Warping', 'Churning', 'Vibing', 'Cooking'];
+
+  // Type out lines with thinking spinner
   let currentLine = 0;
   function showNextLine() {
     if (currentLine < lines.length) {
-      lines[currentLine].classList.add('visible');
-      currentLine++;
-      const delay = currentLine === 1 ? 800 : currentLine === 2 ? 600 : 300;
-      setTimeout(showNextLine, delay);
+      if (currentLine === 0) {
+        // Show first prompt immediately
+        lines[currentLine].classList.add('visible');
+        currentLine++;
+        // Show thinking spinner
+        thinking.classList.add('visible');
+        const verb = verbs[Math.floor(Math.random() * verbs.length)];
+        thinking.innerHTML = `<span class="mauve">· ${verb}<span class="dot-spinner"></span></span>`;
+        setTimeout(showNextLine, 1500);
+      } else if (currentLine === 1) {
+        // Hide thinking, show content
+        thinking.classList.remove('visible');
+        lines[currentLine].classList.add('visible');
+        currentLine++;
+        setTimeout(showNextLine, 400);
+      } else {
+        lines[currentLine].classList.add('visible');
+        currentLine++;
+        setTimeout(showNextLine, 300);
+      }
     } else {
       inputArea.classList.add('visible');
       setTimeout(() => nameInput.focus(), 100);
