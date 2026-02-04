@@ -256,54 +256,39 @@
 
   <div class="body" id="terminal">
 
-    <!-- User prompt -->
     <div class="line" id="line0">
-      <div class="user-prompt"><span class="chevron">❯</span>./invite.sh</div>
+      <div class="user-prompt"><span class="chevron">❯</span>cat hackathon.env</div>
     </div>
 
     <div class="line" id="line1">
       <div class="output">
         <div class="tool-block">
-          <span class="tool-name">Read(invite.sh)</span>
+          <span class="tool-name">Read(hackathon.env)</span>
           <div class="tool-output">
-            Loading hackathon details...
+            <span class="dim">1</span> <span class="green">EVENT</span>=<span class="yellow">"HACKATHON"</span><br>
+            <span class="dim">2</span> <span class="green">LOCATION</span>=<span class="yellow">"Ben's house"</span><br>
+            <span class="dim">3</span> <span class="green">START</span>=<span class="yellow">"Friday"</span><br>
+            <span class="dim">4</span> <span class="green">END</span>=<span class="yellow">"never"</span><br>
+            <span class="dim">5</span><br>
+            <span class="dim">6</span> <span class="dim"># bring your laptop.</span><br>
+            <span class="dim">7</span> <span class="dim"># bring your ideas.</span><br>
+            <span class="dim">8</span> <span class="dim"># we ship at all costs.</span>
           </div>
         </div>
       </div>
     </div>
 
     <div class="line" id="line2">
-      <div class="bullet"><span class="text">WHAT:  </span><span class="red bold">HACKATHON</span></div>
+      <div class="bullet">You're invited. It starts <span class="yellow">Friday</span> and goes <span class="red bold">forever</span>.</div>
     </div>
-    <div class="line" id="line3">
-      <div class="bullet"><span class="text">WHERE: </span><span class="green">Ben's house</span></div>
-    </div>
+
+    <div class="line" id="line3">&nbsp;</div>
+
     <div class="line" id="line4">
-      <div class="bullet"><span class="text">WHEN:  </span><span class="yellow">Friday</span></div>
-    </div>
-    <div class="line" id="line5">
-      <div class="bullet"><span class="text">ENDS:  </span><span class="red bold">never. it goes forever.</span></div>
-    </div>
-
-    <div class="line" id="line6">&nbsp;</div>
-
-    <div class="line" id="line7">
-      <div class="bullet dim"># bring your laptop.</div>
-    </div>
-    <div class="line" id="line8">
-      <div class="bullet dim"># bring your ideas.</div>
-    </div>
-    <div class="line" id="line9">
-      <div class="bullet dim"># we ship at all costs.</div>
-    </div>
-
-    <div class="line" id="line10">&nbsp;</div>
-
-    <div class="line" id="line11">
       <div class="user-prompt"><span class="chevron">❯</span>git add yourself</div>
     </div>
 
-    <div class="line" id="line12">
+    <div class="line" id="line5">
       <div class="bullet"><span class="text">Push the button to confirm your commit.</span><span class="cursor" id="cursor"></span></div>
     </div>
 
@@ -401,7 +386,7 @@
     if (currentLine < lines.length) {
       lines[currentLine].classList.add('visible');
       currentLine++;
-      const delay = currentLine <= 1 ? 800 : currentLine === 2 ? 600 : 200;
+      const delay = currentLine === 1 ? 800 : currentLine === 2 ? 600 : 300;
       setTimeout(showNextLine, delay);
     } else {
       actionArea.classList.add('visible');
