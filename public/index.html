@@ -148,14 +148,6 @@
       margin-bottom: 6px;
     }
     .thinking.visible { display: flex; align-items: center; gap: 8px; }
-    .thinking .spinner {
-      display: inline-block;
-      animation: spin 0.8s linear infinite;
-    }
-    @keyframes spin {
-      0% { content: '⠋'; }
-      100% { transform: rotate(360deg); }
-    }
     .thinking .dot-spinner::after {
       content: '';
       animation: dots 1.5s steps(4) infinite;
@@ -279,7 +271,7 @@
     </div>
 
     <div class="thinking" id="thinking">
-      <span class="mauve">· Canoodling<span class="dot-spinner"></span></span>
+      <span class="red">· Canoodling<span class="dot-spinner"></span></span>
     </div>
 
     <div class="line" id="line1">
@@ -420,7 +412,7 @@
         // Show thinking spinner
         thinking.classList.add('visible');
         const verb = verbs[Math.floor(Math.random() * verbs.length)];
-        thinking.innerHTML = `<span class="mauve">· ${verb}<span class="dot-spinner"></span></span>`;
+        thinking.innerHTML = `<span class="red">· ${verb}<span class="dot-spinner"></span></span>`;
         setTimeout(showNextLine, 2500);
       } else if (currentLine === 1) {
         // Hide thinking, show content
